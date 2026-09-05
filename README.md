@@ -7,7 +7,7 @@ indexed by **the time period it talks about** and **the places it talks about** 
 so you can ask "what has anyone made about the Aegean between 1300 and 1100 BCE?"
 rather than "what did this channel upload last month".
 
-211 items from 29 creators in five languages, across 154 places in 41 countries,
+211 items from 30 creators in five languages, across 154 places in 41 countries,
 spanning 43 000 BCE to 2023.
 
 The whole thing is three CSV files and a static page. There is no server-side
