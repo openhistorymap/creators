@@ -2,7 +2,9 @@ name: Submission to pull request
 
 on:
   issues:
-    types: [opened, labeled]
+    # `labeled` only: creating an issue with a label fires `opened` too, which
+    # would run this job twice for the same submission.
+    types: [labeled]
 
 permissions:
   contents: write
@@ -12,8 +14,9 @@ permissions:
 jobs:
   process:
     if: >-
-      contains(github.event.issue.labels.*.name, 'add-channel') ||
-      contains(github.event.issue.labels.*.name, 'add-item')
+      github.event.issue.state == 'open' &&
+      (github.event.label.name == 'add-channel' ||
+       github.event.label.name == 'add-item')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +36,7 @@ jobs:
       - name: Decide submission type
         id: kind
         run: |
-          if [ "${{ contains(github.event.issue.labels.*.name, 'add-channel') }}" = "true" ]; then
+          if [ "${{ github.event.label.name }}" = "add-channel" ]; then
             echo "type=channel" >> "$GITHUB_OUTPUT"
           else
             echo "type=item" >> "$GITHUB_OUTPUT"
@@ -92,9 +95,22 @@ jobs:
             echo "date and format were read from the platform; the period and place are"
             echo "the submitter's reading and are what a reviewer should check."
           } > /tmp/pr.md
-          gh pr create \
-            --title "Add submission from #${{ github.event.issue.number }}" \
-            --body-file /tmp/pr.md \
-            --head "$BRANCH" --base main
-          gh issue comment "${{ github.event.issue.number }}" \
-            --body "A pull request is open with this change. Thanks!"
+          if gh pr create \
+               --title "Add submission from #${{ github.event.issue.number }}" \
+               --body-file /tmp/pr.md \
+               --head "$BRANCH" --base main; then
+            gh issue comment "${{ github.event.issue.number }}" \
+              --body "A pull request is open with this change. Thanks!"
+          else
+            echo "PR creation is not permitted for Actions; falling back to a link."
+            URL="${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH?quick_pull=1"
+            {
+              echo "The change is ready on branch \`$BRANCH\`, but this repository"
+              echo "does not let Actions open pull requests."
+              echo
+              echo "**[Open the pull request]($URL)** — one click, already filled in."
+              echo
+              cat /tmp/summary.md
+            } > /tmp/fallback.md
+            gh issue comment "${{ github.event.issue.number }}" --body-file /tmp/fallback.md
+          fi
