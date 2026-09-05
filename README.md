@@ -1,6 +1,6 @@
 # History & Archaeology Creator Directory
 
-**Live: https://openhistorymap.github.io/creators/**
+**Live: https://www.openhistorymap.org/creators/**
 
 A directory of history / archaeology creators where every reel and video is
 indexed by **the time period it talks about** and **the places it talks about** —
