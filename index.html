@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>History &amp; Archaeology Influencer Directory</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◷</span>
+    <div>
+      <h1>History &amp; Archaeology Creators</h1>
+      <p class="sub">Reels and videos indexed by the <em>time</em> and <em>place</em> they talk about</p>
+    </div>
+  </div>
+  <div class="counts">
+    <span id="count-videos">0</span> items ·
+    <span id="count-creators">0</span> creators ·
+    <span id="count-places">0</span> places
+  </div>
+</header>
+
+<main class="layout">
+
+  <aside class="panel" id="panel">
+    <div class="filters">
+      <input type="search" id="q" placeholder="Search title, era, tag, creator…" autocomplete="off">
+
+      <div class="chip-row" id="platform-filter">
+        <button class="chip active" data-platform="*">All formats</button>
+        <button class="chip" data-platform="youtube">YouTube</button>
+        <button class="chip" data-platform="reel">Reels / shorts</button>
+      </div>
+
+      <div class="chip-row" id="lang-filter"></div>
+
+      <details class="facet" open>
+        <summary>Creators <span class="facet-count" id="fc-creators"></span></summary>
+        <div class="facet-body" id="creator-filter"></div>
+      </details>
+
+      <details class="facet">
+        <summary>Tags <span class="facet-count" id="fc-tags"></span></summary>
+        <div class="facet-body chip-row" id="tag-filter"></div>
+      </details>
+
+      <div class="active-filters" id="active-filters" hidden></div>
+    </div>
+
+    <div class="results" id="results"></div>
+  </aside>
+
+  <section class="stage">
+    <div id="map"></div>
+
+    <div class="timeline">
+      <div class="timeline-head">
+        <span class="tl-label">Period covered</span>
+        <output class="tl-range" id="tl-range">—</output>
+        <button class="linkbtn" id="tl-reset">reset</button>
+      </div>
+      <div class="histogram" id="histogram"></div>
+      <div class="range-wrap">
+        <div class="range-track"></div>
+        <div class="range-fill" id="range-fill"></div>
+        <input type="range" id="year-min" min="0" max="1000" value="0" step="1" aria-label="Earliest year">
+        <input type="range" id="year-max" min="0" max="1000" value="1000" step="1" aria-label="Latest year">
+      </div>
+      <div class="tl-ticks" id="tl-ticks"></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="empty" id="empty" hidden>
+  <p>Nothing matches these filters.</p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

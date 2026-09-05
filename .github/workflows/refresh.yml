@@ -1,0 +1,54 @@
+name: Weekly feed sweep
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'   # Mondays, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Look for uploads that are not indexed yet
+        id: sweep
+        run: |
+          python3 tools/refresh_feeds.py > /tmp/new.txt 2> /tmp/log.txt || true
+          echo "count=$(grep -c '^  ' /tmp/new.txt || echo 0)" >> "$GITHUB_OUTPUT"
+          cat /tmp/log.txt
+
+      - name: Open or update the sweep issue
+        if: steps.sweep.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "The weekly sweep found uploads that are not in \`data/videos.csv\` yet."
+            echo
+            echo "Nothing is added automatically: each one needs a period and a place,"
+            echo "which is a judgement call. Pick any of these and open an"
+            echo "**Add a video or reel** issue, or send a pull request."
+            echo
+            echo '```'
+            cat /tmp/new.txt
+            echo '```'
+            echo
+            echo "_Some entries are deliberately skipped — off-topic, or with no"
+            echo "datable subject. They will keep reappearing here; that is expected._"
+          } > /tmp/issue.md
+          EXISTING=$(gh issue list --label feed-sweep --state open \
+                       --json number -q '.[0].number' || true)
+          if [ -n "$EXISTING" ]; then
+            gh issue edit "$EXISTING" --body-file /tmp/issue.md
+          else
+            gh issue create --title "Feed sweep: uploads not yet indexed" \
+              --label feed-sweep --body-file /tmp/issue.md
+          fi

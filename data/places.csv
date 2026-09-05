@@ -1,0 +1,155 @@
+id,name,lat,lon,country,wikidata
+pompeii,Pompeii,40.7497,14.4869,Italy,Q43332
+herculaneum,Herculaneum,40.8060,14.3480,Italy,Q182908
+rome,Rome,41.8902,12.4922,Italy,Q220
+ostia,Ostia Antica,41.7556,12.2917,Italy,Q193246
+athens,Athens (Acropolis),37.9715,23.7257,Greece,Q131013
+knossos,Knossos,35.2980,25.1631,Greece,Q173782
+mycenae,Mycenae,37.7306,22.7561,Greece,Q131013
+delphi,Delphi,38.4824,22.5010,Greece,Q82425
+troy,Troy / Hisarlik,39.9575,26.2389,Turkiye,Q23482
+hattusa,Hattusa,40.0194,34.6153,Turkiye,Q207528
+gobekli-tepe,Gobekli Tepe,37.2233,38.9224,Turkiye,Q272668
+catalhoyuk,Catalhoyuk,37.6667,32.8283,Turkiye,Q205133
+ur,Ur,30.9626,46.1031,Iraq,Q131746
+babylon,Babylon,32.5364,44.4208,Iraq,Q5680
+nineveh,Nineveh,36.3594,43.1528,Iraq,Q186445
+persepolis,Persepolis,29.9354,52.8916,Iran,Q129072
+petra,Petra,30.3285,35.4444,Jordan,Q5788
+giza,Giza Plateau,29.9773,31.1325,Egypt,Q37200
+luxor,Thebes / Luxor,25.7188,32.6573,Egypt,Q101583
+alexandria,Alexandria,31.2001,29.9187,Egypt,Q87
+carthage,Carthage,36.8528,10.3233,Tunisia,Q6343
+leptis-magna,Leptis Magna,32.6386,14.2925,Libya,Q211819
+great-zimbabwe,Great Zimbabwe,-20.2675,30.9339,Zimbabwe,Q210678
+timbuktu,Timbuktu,16.7735,-3.0074,Mali,Q13298
+mohenjo-daro,Mohenjo-daro,27.3294,68.1381,Pakistan,Q184508
+angkor,Angkor,13.4125,103.8670,Cambodia,Q506156
+xian,Xi'an / Terracotta Army,34.3853,109.2783,China,Q1189
+nara,Nara,34.6851,135.8048,Japan,Q182404
+stonehenge,Stonehenge,51.1789,-1.8262,United Kingdom,Q39671
+sutton-hoo,Sutton Hoo,52.0894,1.3390,United Kingdom,Q640743
+hadrians-wall,Hadrian's Wall,55.0247,-2.2903,United Kingdom,Q1358576
+skara-brae,Skara Brae,59.0486,-3.3419,United Kingdom,Q846953
+lascaux,Lascaux,45.0537,1.1750,France,Q189113
+chauvet,Chauvet Cave,44.3878,4.4147,France,Q752694
+carnac,Carnac Stones,47.5975,-3.0797,France,Q751895
+altamira,Altamira Cave,43.3777,-4.1222,Spain,Q211404
+birka,Birka,59.3350,17.5420,Sweden,Q207395
+jelling,Jelling,55.7561,9.4192,Denmark,Q506653
+lanse-aux-meadows,L'Anse aux Meadows,51.5964,-55.5320,Canada,Q189113
+cahokia,Cahokia,38.6553,-90.0617,United States,Q863887
+mesa-verde,Mesa Verde,37.1830,-108.4874,United States,Q219695
+chaco-canyon,Chaco Canyon,36.0606,-107.9558,United States,Q1063315
+teotihuacan,Teotihuacan,19.6925,-98.8438,Mexico,Q184436
+tenochtitlan,Tenochtitlan,19.4350,-99.1314,Mexico,Q13695
+chichen-itza,Chichen Itza,20.6829,-88.5686,Mexico,Q13363
+tikal,Tikal,17.2220,-89.6237,Guatemala,Q170495
+copan,Copan,14.8380,-89.1414,Honduras,Q207824
+caral,Caral,-10.8925,-77.5206,Peru,Q205662
+machu-picchu,Machu Picchu,-13.1631,-72.5450,Peru,Q676203
+nazca,Nazca Lines,-14.7390,-75.1300,Peru,Q13113
+cusco,Cusco,-13.5320,-71.9675,Peru,Q5582
+easter-island,Rapa Nui / Easter Island,-27.1127,-109.3497,Chile,Q14452
+uluru,Uluru,-25.3444,131.0369,Australia,Q3805
+pergamon,Pergamon,39.1322,27.1839,Turkiye,
+numantia,Numantia,41.8097,-2.4453,Spain,
+djemila,Djemila (Cuicul),36.3206,5.7361,Algeria,
+constantinople,Constantinople / Istanbul,41.0086,28.9802,Turkiye,
+las-medulas,Las Medulas,42.4667,-6.7667,Spain,
+trowulan,Trowulan (Majapahit),-7.5528,112.3833,Indonesia,
+karakorum,Karakorum,47.1980,102.8395,Mongolia,
+bagan,Bagan,21.1717,94.8585,Myanmar,
+philippi,Philippi,41.0131,24.2864,Greece,
+actium,Actium,38.9403,20.7614,Greece,
+sicily,Sicily,37.6000,14.0000,Italy,
+vienna,Vienna,48.2082,16.3738,Austria,
+paris,Paris,48.8566,2.3522,France,
+tambora,Mount Tambora,-8.2500,118.0000,Indonesia,
+bad-durrenberg,Bad Durrenberg,51.3000,11.9833,Germany,
+nebra,Nebra,51.2833,11.5333,Germany,
+hohlenstein-stadel,Hohlenstein-Stadel,48.5486,10.1728,Germany,
+trypillia,Trypillia,50.1167,30.7667,Ukraine,
+la-venta,La Venta,18.1036,-94.0403,Mexico,
+san-lorenzo,San Lorenzo Tenochtitlan,17.7500,-94.7667,Mexico,
+wari,Wari (Ayacucho),-13.0500,-74.1833,Peru,
+bahia,Bahia coast,-12.9777,-38.5016,Brazil,
+santa-barbara-channel,Santa Barbara Channel,34.4208,-119.6982,United States,
+great-baddow,Great Baddow,51.7167,0.4833,United Kingdom,
+londinium,Londinium,51.5128,-0.0918,United Kingdom,
+london,London,51.5074,-0.1278,United Kingdom,
+nottingham,Nottingham,52.9548,-1.1581,United Kingdom,
+burghead,Burghead,57.7000,-3.4833,United Kingdom,
+normandy-beaches,Normandy landing beaches,49.3417,-0.5300,France,
+berlin,Berlin,52.5200,13.4050,Germany,
+bologna,Bologna,44.4949,11.3426,Italy,
+vatican,Vatican City,41.9029,12.4534,Vatican City,
+nicaea,Nicaea (Iznik),40.4297,29.7194,Turkiye,
+gniezno,Gniezno,52.5348,17.5826,Poland,
+jerusalem,Jerusalem,31.7683,35.2137,Israel,
+cairo,Cairo,30.0444,31.2357,Egypt,
+aleppo,Aleppo,36.2021,37.1343,Syria,
+kolkata,Kolkata (Calcutta),22.5726,88.3639,India,
+khartoum,Khartoum,15.5007,32.5599,Sudan,
+fort-michilimackinac,Fort Michilimackinac,45.7869,-84.7286,United States,
+oseberg,Oseberg,59.3833,10.4333,Norway,
+philadelphia,Philadelphia,39.9526,-75.1652,United States,
+olympia,Olympia,37.6383,21.6300,Greece,
+harappa,Harappa,30.6288,72.8636,Pakistan,
+velia,Velia (Porta Rosa),40.1608,15.1539,Italy,
+bibracte,Bibracte,46.9256,4.0392,France,
+pasargadae,Pasargadae,30.1944,53.1678,Iran,
+vergina,Vergina (Aigai),40.4833,22.3167,Greece,
+venice,Venice,45.4408,12.3155,Italy,
+milan,Milan,45.4642,9.1900,Italy,
+harzhorn,Harzhorn,51.8667,9.9500,Germany,
+cologne,Cologne (Colonia),50.9375,6.9603,Germany,
+pella,Pella,40.7606,22.5236,Greece,
+kadesh,Kadesh,34.5667,36.5167,Syria,
+ness-of-brodgar,Ness of Brodgar,59.0011,-3.2181,United Kingdom,
+bursledon,Bursledon,50.8833,-1.3167,United Kingdom,
+castle-howard,Castle Howard (Henderskelf),54.1214,-0.9139,United Kingdom,
+shooters-hill,Shooter's Hill,51.4667,0.0667,United Kingdom,
+northborough,Northborough,52.6333,-0.3167,United Kingdom,
+coberley,Coberley,51.8333,-2.0500,United Kingdom,
+drumlanrig,Drumlanrig,55.2833,-3.8000,United Kingdom,
+allasdale-barra,"Allasdale, Barra",57.0167,-7.4667,United Kingdom,
+warton,Warton,53.7833,-2.7667,United Kingdom,
+flodden,Flodden Field,55.6333,-2.1833,United Kingdom,
+lewis,"Uig, Isle of Lewis",58.1900,-7.0300,United Kingdom,
+plymouth,Plymouth,50.3755,-4.1427,United Kingdom,
+lerna,Lerna,37.5583,22.7167,Greece,
+phaistos,Phaistos,35.0517,24.8139,Greece,
+vrable,Vrable-Velke Lehemby,48.2444,18.3111,Slovakia,
+cukurici-hoyuk,Cukurici Hoyuk,37.9333,27.3333,Turkiye,
+halys,Halys river,40.4000,36.0000,Turkiye,
+autun,Autun (Augustodunum),46.9500,4.3000,France,
+gondole,Gondole,45.7167,3.1667,France,
+lavau,Lavau,48.3167,4.0667,France,
+saint-dizier,Saint-Dizier,48.6386,4.9497,France,
+bordeaux,Bordeaux,44.8378,-0.5792,France,
+villers-carbonnel,Villers-Carbonnel,49.8833,2.8833,France,
+blainville-sur-orne,Blainville-sur-Orne,49.2333,-0.3000,France,
+gemenos,Gemenos,43.2958,5.6272,France,
+fort-saint-sebastien,Fort Saint-Sebastien,48.8983,2.0939,France,
+nimes,Nimes (Nemausus),43.8367,4.3601,France,
+somme,Somme battlefield,49.9833,2.7000,France,
+otzi-similaun,Otzi find site (Similaun),46.7786,10.8394,Italy,
+fayum,Fayum,29.3084,30.8428,Egypt,
+tianjin,Tianjin,39.0842,117.2009,China,
+beijing,Beijing,39.9042,116.4074,China,
+cartagena-spain,Cartagena (Spain),37.6000,-0.9833,Spain,
+madrid,Madrid,40.4168,-3.7038,Spain,
+seville,Seville,37.3891,-5.9845,Spain,
+el-escorial,El Escorial,40.5892,-4.1472,Spain,
+ceuta,Ceuta,35.8894,-5.3213,Spain,
+gibraltar,Gibraltar,36.1408,-5.3536,Gibraltar,
+malta,Malta (Great Siege),35.8997,14.5147,Malta,
+amsterdam,Amsterdam,52.3676,4.9041,Netherlands,
+delft,Delft,52.0116,4.3571,Netherlands,
+st-petersburg,Saint Petersburg,59.9311,30.3609,Russia,
+bogota,Bogota,4.7110,-74.0721,Colombia,
+caracas,Caracas,10.4806,-66.9036,Venezuela,
+dogali,Dogali,15.4333,39.3167,Eritrea,
+everest,Mount Everest,27.9881,86.9250,Nepal,
+jamestown,Jamestown,37.2083,-76.7772,United States,

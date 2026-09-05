@@ -1,0 +1,100 @@
+name: Submission to pull request
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  process:
+    if: >-
+      contains(github.event.issue.labels.*.name, 'add-channel') ||
+      contains(github.event.issue.labels.*.name, 'add-item')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # The issue body is untrusted input. It goes through the environment and
+      # into a file, never interpolated into a shell command.
+      - name: Capture the submission
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$ISSUE_BODY" > /tmp/body.md
+
+      - name: Decide submission type
+        id: kind
+        run: |
+          if [ "${{ contains(github.event.issue.labels.*.name, 'add-channel') }}" = "true" ]; then
+            echo "type=channel" >> "$GITHUB_OUTPUT"
+          else
+            echo "type=item" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the row
+        id: build
+        continue-on-error: true
+        run: |
+          python3 tools/issue_to_row.py \
+            --type "${{ steps.kind.outputs.type }}" \
+            --body-file /tmp/body.md \
+            --summary-file /tmp/summary.md
+
+      - name: Validate the result
+        id: check
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
+        run: python3 tools/validate.py
+
+      - name: Report a rejected submission
+        if: steps.build.outcome != 'success' || steps.check.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "The bot could not turn this into a pull request yet."
+            echo
+            if [ -f /tmp/summary.md ]; then cat /tmp/summary.md; fi
+            echo
+            echo "Edit the issue and it will be retried, or open a pull request by hand."
+            echo "See [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md)."
+          } > /tmp/comment.md
+          gh issue comment "${{ github.event.issue.number }}" --body-file /tmp/comment.md
+          gh issue edit "${{ github.event.issue.number }}" --add-label "needs-attention"
+          exit 1
+
+      - name: Open the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH="submission/issue-${{ github.event.issue.number }}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add data/
+          git commit -m "Add submission from #${{ github.event.issue.number }}"
+          git push -u origin "$BRANCH" --force
+          {
+            cat /tmp/summary.md
+            echo
+            echo "Closes #${{ github.event.issue.number }}"
+            echo
+            echo "---"
+            echo "Prepared automatically from the submission issue. The title, upload"
+            echo "date and format were read from the platform; the period and place are"
+            echo "the submitter's reading and are what a reviewer should check."
+          } > /tmp/pr.md
+          gh pr create \
+            --title "Add submission from #${{ github.event.issue.number }}" \
+            --body-file /tmp/pr.md \
+            --head "$BRANCH" --base main
+          gh issue comment "${{ github.event.issue.number }}" \
+            --body "A pull request is open with this change. Thanks!"

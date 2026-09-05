@@ -1,0 +1,74 @@
+name: Add a video or reel
+description: Add one item to the index, linked to a period and place
+title: "[item] "
+labels: ["add-item"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The bot fills in the title, upload date and format from the platform itself,
+        so you only need the URL plus the period and place it is *about*.
+
+        The creator must already be listed. If they are not, open an
+        **Add a creator** issue first.
+  - type: input
+    id: video_url
+    attributes:
+      label: Video URL
+      description: "A full YouTube URL, e.g. https://www.youtube.com/watch?v=xxxxxxxxxxx"
+    validations:
+      required: true
+  - type: input
+    id: year_start
+    attributes:
+      label: Period start year
+      description: "The year the CONTENT is about, not the upload date. Negative = BCE."
+      placeholder: "-1250"
+    validations:
+      required: true
+  - type: input
+    id: year_end
+    attributes:
+      label: Period end year
+      description: "Same as the start year for a single-year subject."
+      placeholder: "-1150"
+    validations:
+      required: true
+  - type: input
+    id: era
+    attributes:
+      label: Era label
+      description: A human name for that span.
+      placeholder: "Late Bronze Age Collapse"
+    validations:
+      required: true
+  - type: input
+    id: places
+    attributes:
+      label: Place ids
+      description: >
+        Semicolon-separated ids from data/places.csv, e.g. "hattusa;mycenae".
+        Leave blank if the subject has no single place.
+      placeholder: "hattusa;mycenae"
+  - type: textarea
+    id: new_places
+    attributes:
+      label: New places
+      description: >
+        Only if a place is not in data/places.csv yet. One per line, as
+        id,Name,lat,lon,Country
+      placeholder: |
+        lerna,Lerna,37.5583,22.7167,Greece
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: Semicolon-separated, lowercase.
+      placeholder: "collapse;bronze-age;systems"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: >
+        Optional. Say so if the period or place is an editorial reading rather
+        than something stated in the video.

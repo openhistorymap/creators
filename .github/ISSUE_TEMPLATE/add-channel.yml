@@ -1,0 +1,68 @@
+name: Add a creator
+description: Suggest a history or archaeology creator for the directory
+title: "[channel] "
+labels: ["add-channel"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a creator. A bot will resolve the channel, confirm it
+        exists, and open a pull request with the new row for a human to review.
+
+        You do **not** need to know the channel id — the bot works that out.
+  - type: input
+    id: channel_url
+    attributes:
+      label: Channel URL or handle
+      description: "A YouTube channel URL or @handle, e.g. https://www.youtube.com/@toldinstone"
+      placeholder: "https://www.youtube.com/@example"
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      description: "ISO 639-1 code of the main language: en, it, de, fr, es …"
+      placeholder: "en"
+    validations:
+      required: true
+  - type: input
+    id: focus
+    attributes:
+      label: Focus
+      description: One line on what periods, places or themes they cover.
+      placeholder: "Roman daily life and architecture"
+    validations:
+      required: true
+  - type: input
+    id: instagram
+    attributes:
+      label: Instagram URL
+      description: Optional.
+  - type: input
+    id: tiktok
+    attributes:
+      label: TikTok URL
+      description: Optional.
+  - type: input
+    id: facebook
+    attributes:
+      label: Facebook URL
+      description: "Optional. A reels tab URL is fine."
+  - type: input
+    id: website
+    attributes:
+      label: Website
+      description: Optional.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Optional. Sister channels, caveats, why they are a good fit.
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Please confirm
+      options:
+        - label: This creator makes history or archaeology content about identifiable periods and places.
+          required: true
