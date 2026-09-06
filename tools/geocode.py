@@ -30,8 +30,12 @@ def slugify(text):
 
 def lookup(query):
     url = ENDPOINT + urllib.parse.urlencode(
-        {"q": query, "format": "json", "limit": 1, "addressdetails": 1})
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
+        {"q": query, "format": "json", "limit": 1, "addressdetails": 1,
+         "accept-language": "en"})
+    # accept-language=en, or the country comes back as 中国 / مصر and the
+    # gazetteer stops being consistently English.
+    req = urllib.request.Request(url, headers={"User-Agent": UA,
+                                               "Accept-Language": "en"})
     with urllib.request.urlopen(req, timeout=25) as r:
         data = json.load(r)
     if not data:

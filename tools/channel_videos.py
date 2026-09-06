@@ -60,6 +60,10 @@ def harvest(data):
             lv = o.get("lockupViewModel")
             if isinstance(lv, dict):
                 vid = lv.get("contentId")
+                # A channel tab also carries playlist lockups, whose contentId is
+                # a PL... id. Only real video ids are 11 characters.
+                if not (isinstance(vid, str) and len(vid) == 11):
+                    vid = None
                 meta = (lv.get("metadata") or {}).get("lockupMetadataViewModel", {})
                 title = text_of(meta.get("title") or {})
                 m = DUR.search(json.dumps(lv))
