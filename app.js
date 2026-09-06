@@ -67,6 +67,9 @@ const PROFILES = [['youtube', 'YT'], ['instagram', 'IG'], ['tiktok', 'TT'],
 const LANGS = { en: 'English', it: 'Italiano', de: 'Deutsch', fr: 'Français',
                 es: 'Español', nl: 'Nederlands', pt: 'Português' };
 
+const LINK_LABELS = { youtube: 'YouTube', instagram: 'Instagram', tiktok: 'TikTok',
+                      facebook: 'Facebook', website: 'Website' };
+
 const PALETTE = ['#d9a441', '#7fb0a3', '#c98a6b', '#8f9fd1', '#c47f9e',
                  '#9db06a', '#d2735e', '#6fa8c4', '#b48ec4', '#c9a97f',
                  '#7fbf8c', '#cf8f8f'];
@@ -219,6 +222,15 @@ function buildCreatorFacet() {
       });
       head.appendChild(links);
 
+      const info = document.createElement('button');
+      info.className = 'cr-info';
+      info.type = 'button';
+      info.textContent = 'i';
+      info.title = 'Profile of ' + c.name;
+      info.setAttribute('aria-label', 'Profile of ' + c.name);
+      info.onclick = ev => { ev.stopPropagation(); openProfile(c.id); };
+      head.appendChild(info);
+
       const n = document.createElement('span');
       n.className = 'n';
       n.textContent = vids.length;
@@ -327,6 +339,231 @@ function buildTagFacet() {
 
 function toggle(set, key) { set.has(key) ? set.delete(key) : set.add(key); }
 
+
+/* ------------------------------------------------------- creator profile */
+
+function creatorItems(id) {
+  return S.videos.filter(v => v.influencer_id === id)
+                 .sort((a, b) => a.y0 - b.y0 || a.y1 - b.y1);
+}
+
+function openProfile(id) {
+  const c = S.creators.get(id);
+  if (!c) return;
+  const vids = creatorItems(id);
+  const box = $('profile');
+  box.innerHTML = '';
+
+  const close = document.createElement('button');
+  close.className = 'profile-close';
+  close.type = 'button';
+  close.textContent = '×';
+  close.setAttribute('aria-label', 'Close profile');
+  close.onclick = closeProfile;
+  box.appendChild(close);
+
+  // header
+  const head = document.createElement('header');
+  head.className = 'profile-head';
+  const badge = document.createElement('span');
+  badge.className = 'profile-avatar';
+  badge.style.background = c.color;
+  badge.textContent = (c.name || '?').trim().charAt(0).toUpperCase();
+  const htxt = document.createElement('div');
+  const h2 = document.createElement('h2');
+  h2.textContent = c.name;
+  const handle = document.createElement('p');
+  handle.className = 'profile-handle';
+  handle.textContent = c.handle || '';
+  if (c.language) {
+    const lang = document.createElement('span');
+    lang.className = 'profile-lang';
+    lang.textContent = LANGS[c.language] || c.language;
+    handle.appendChild(lang);
+  }
+  htxt.append(h2, handle);
+  head.append(badge, htxt);
+  box.appendChild(head);
+
+  if (c.focus) {
+    const f = document.createElement('p');
+    f.className = 'profile-focus';
+    f.textContent = c.focus;
+    box.appendChild(f);
+  }
+
+  // links
+  const links = document.createElement('div');
+  links.className = 'profile-links';
+  let any = false;
+  PROFILES.forEach(([field, label]) => {
+    const href = (c[field] || '').trim();
+    if (!href) return;
+    any = true;
+    const a = document.createElement('a');
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = LINK_LABELS[field] || label;
+    links.appendChild(a);
+  });
+  if (any) box.appendChild(links);
+
+  // stats
+  const places = new Set();
+  vids.forEach(v => v.placeIds.forEach(p => places.add(p)));
+  const reels = vids.filter(v => v.platform === 'reel').length;
+  const stats = document.createElement('div');
+  stats.className = 'profile-stats';
+  const cells = [
+    [vids.length, vids.length === 1 ? 'item' : 'items'],
+    [reels, reels === 1 ? 'reel' : 'reels'],
+    [vids.length - reels, 'long-form'],
+    [places.size, places.size === 1 ? 'place' : 'places']
+  ];
+  cells.forEach(([n, label]) => {
+    const d = document.createElement('div');
+    d.innerHTML = '<b></b><span></span>';
+    d.querySelector('b').textContent = n;
+    d.querySelector('span').textContent = label;
+    stats.appendChild(d);
+  });
+  box.appendChild(stats);
+
+  if (vids.length) {
+    const lo = Math.min(...vids.map(v => v.y0));
+    const hi = Math.max(...vids.map(v => v.y1));
+    const sec = document.createElement('div');
+    sec.className = 'profile-section';
+    sec.innerHTML = '<h3>Coverage</h3>';
+    const span = document.createElement('p');
+    span.className = 'profile-span';
+    span.textContent = fmtSpan(lo, hi);
+    sec.appendChild(span);
+    const spark = sparkline(c, vids);
+    spark.classList.add('spark-lg');
+    sec.appendChild(spark);
+    const ticks = document.createElement('div');
+    ticks.className = 'profile-ticks';
+    [-50000, -10000, -2000, 0, 1000, 2000].forEach(y => {
+      const s = document.createElement('span');
+      s.style.left = (yearToPos(y) * 100).toFixed(2) + '%';
+      s.textContent = fmtYear(y);
+      ticks.appendChild(s);
+    });
+    sec.appendChild(ticks);
+    box.appendChild(sec);
+  }
+
+  // tags
+  const tagCount = new Map();
+  vids.forEach(v => v.tags.forEach(t => tagCount.set(t, (tagCount.get(t) || 0) + 1)));
+  if (tagCount.size) {
+    const sec = document.createElement('div');
+    sec.className = 'profile-section';
+    sec.innerHTML = '<h3>Themes</h3>';
+    const row = document.createElement('div');
+    row.className = 'chip-row';
+    [...tagCount.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 14).forEach(([t, n]) => {
+        const b = document.createElement('button');
+        b.className = 'chip';
+        b.textContent = t + ' ' + n;
+        b.onclick = () => { S.tagSel.add(t); closeProfile(); render(); };
+        row.appendChild(b);
+      });
+    sec.appendChild(row);
+    box.appendChild(sec);
+  }
+
+  // places
+  if (places.size) {
+    const sec = document.createElement('div');
+    sec.className = 'profile-section';
+    sec.innerHTML = '<h3>Places</h3>';
+    const row = document.createElement('div');
+    row.className = 'chip-row';
+    [...places].map(id => S.places.get(id)).filter(Boolean)
+      .sort((a, b) => a.name.localeCompare(b.name)).forEach(p => {
+        const b = document.createElement('button');
+        b.className = 'chip';
+        b.textContent = p.name;
+        b.onclick = () => {
+          S.placeSel.add(p.id);
+          closeProfile();
+          render();
+          map.setView([p.lat, p.lon], Math.max(map.getZoom(), 5));
+        };
+        row.appendChild(b);
+      });
+    sec.appendChild(row);
+    box.appendChild(sec);
+  }
+
+  if ((c.notes || '').trim()) {
+    const sec = document.createElement('div');
+    sec.className = 'profile-section';
+    sec.innerHTML = '<h3>Notes</h3>';
+    const p = document.createElement('p');
+    p.className = 'profile-notes';
+    p.textContent = c.notes;
+    sec.appendChild(p);
+    box.appendChild(sec);
+  }
+
+  // every item, earliest first
+  const sec = document.createElement('div');
+  sec.className = 'profile-section';
+  sec.innerHTML = '<h3>All items</h3>';
+  if (!vids.length) {
+    const p = document.createElement('p');
+    p.className = 'profile-notes';
+    p.textContent = 'No items indexed yet.';
+    sec.appendChild(p);
+  }
+  vids.forEach(v => {
+    const a = document.createElement('a');
+    a.className = 'profile-item';
+    a.href = v.url || '#';
+    a.target = '_blank';
+    a.rel = 'noopener';
+    const yr = document.createElement('span');
+    yr.className = 'pi-year';
+    yr.textContent = fmtSpan(v.y0, v.y1);
+    const t = document.createElement('span');
+    t.className = 'pi-title';
+    t.textContent = v.title;
+    const b = document.createElement('span');
+    b.className = 'badge ' + v.platform;
+    b.textContent = v.platform === 'reel' ? 'reel' : 'yt';
+    a.append(yr, t, b);
+    sec.appendChild(a);
+  });
+  box.appendChild(sec);
+
+  const filter = document.createElement('button');
+  filter.className = 'profile-filter';
+  filter.type = 'button';
+  filter.textContent = 'Filter the directory to ' + c.name;
+  filter.onclick = () => {
+    S.creatorSel.clear();
+    S.creatorSel.add(c.id);
+    closeProfile();
+    render();
+  };
+  box.appendChild(filter);
+
+  box.hidden = false;
+  $('scrim').hidden = false;
+  box.scrollTop = 0;
+  box.focus();
+}
+
+function closeProfile() {
+  $('profile').hidden = true;
+  $('scrim').hidden = true;
+}
+
 /* ----------------------------------------------------------- controls */
 
 function bindControls() {
@@ -353,6 +590,11 @@ function bindControls() {
     clearTimeout(t);
     t = setTimeout(() => { S.query = e.target.value.trim().toLowerCase(); render(); }, 120);
   };
+
+  $('scrim').onclick = closeProfile;
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !$('profile').hidden) closeProfile();
+  });
 
   $('platform-filter').onclick = e => {
     const b = e.target.closest('.chip');
@@ -508,7 +750,17 @@ function card(v) {
   by.className = 'by';
   if (v.creator) {
     by.innerHTML = '<span class="dot" style="background:' + v.creator.color + '"></span>';
-    by.append(v.creator.name);
+    const nameBtn = document.createElement('button');
+    nameBtn.type = 'button';
+    nameBtn.className = 'by-name';
+    nameBtn.textContent = v.creator.name;
+    nameBtn.title = 'Profile of ' + v.creator.name;
+    nameBtn.onclick = ev => {
+      ev.preventDefault();          // the card itself is a link
+      ev.stopPropagation();
+      openProfile(v.creator.id);
+    };
+    by.appendChild(nameBtn);
   } else {
     by.textContent = 'unknown creator';
   }
