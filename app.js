@@ -65,7 +65,9 @@ const PROFILES = [['youtube', 'YT'], ['instagram', 'IG'], ['tiktok', 'TT'],
                   ['facebook', 'FB'], ['website', 'WWW']];
 
 const LANGS = { en: 'English', it: 'Italiano', de: 'Deutsch', fr: 'Français',
-                es: 'Español', nl: 'Nederlands', pt: 'Português' };
+                es: 'Español', nl: 'Nederlands', pt: 'Português',
+                ja: '日本語', zh: '中文', ko: '한국어', hi: 'हिन्दी',
+                ar: 'العربية', tr: 'Türkçe', ru: 'Русский', id: 'Bahasa Indonesia' };
 
 const LINK_LABELS = { youtube: 'YouTube', instagram: 'Instagram', tiktok: 'TikTok',
                       facebook: 'Facebook', website: 'Website' };
