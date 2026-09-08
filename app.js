@@ -405,6 +405,7 @@ function openProfile(id) {
     const f = document.createElement('p');
     f.className = 'profile-focus';
     f.textContent = c.focus;
+    f.setAttribute('dir', 'auto');
     box.appendChild(f);
   }
 
@@ -549,6 +550,7 @@ function openProfile(id) {
       const t = document.createElement('span');
       t.className = 'pi-title';
       t.textContent = p.title;
+      t.setAttribute('dir', 'auto');
       a.append(d, t);
       ps.appendChild(a);
     });
@@ -577,6 +579,7 @@ function openProfile(id) {
     const t = document.createElement('span');
     t.className = 'pi-title';
     t.textContent = v.title;
+    t.setAttribute('dir', 'auto');
     const b = document.createElement('span');
     b.className = 'badge ' + v.platform;
     b.textContent = v.platform === 'reel' ? 'reel' : 'yt';
@@ -785,6 +788,7 @@ function card(v) {
   top.className = 'card-top';
   const h = document.createElement('h3');
   h.textContent = v.title;
+  h.setAttribute('dir', 'auto');
   const badge = document.createElement('span');
   badge.className = 'badge ' + plat;
   badge.textContent = plat === 'reel' ? 'reel' : plat;
