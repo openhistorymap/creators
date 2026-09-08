@@ -58,7 +58,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           python3 tools/refresh_feeds.py --deep > /tmp/new.txt 2> /tmp/log.txt || true
-          COUNT=$(grep -c '^  ' /tmp/new.txt || echo 0)
+          # grep -c prints 0 AND exits 1 when there is no match; `|| echo 0`
+          # would append a second 0 and corrupt the value.
+          COUNT=$(grep -c '^  ' /tmp/new.txt || true)
           if [ "$COUNT" = "0" ]; then exit 0; fi
           {
             echo "The weekly deep sweep found **$COUNT uploads** that are not in"
