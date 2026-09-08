@@ -48,14 +48,25 @@ python3 tools/validate.py
 CI runs the same check on every pull request, and the site will not deploy if it
 fails.
 
-## 3. Add a whole channel's back catalogue
+## 3. Promote something from "Latest uploads"
+
+Open any creator's profile panel on the site. If the weekly sweep has found
+uploads that nobody has indexed, they appear under **Latest uploads** — real
+videos with no period or place attached yet. Picking one off that list and
+giving it a `year_start`, `year_end`, `era` and `places` is the single most
+useful thing you can do here.
+
+## 4. Add a whole channel's back catalogue
 
 Add the creator first (issue or PR), then let the weekly sweep list their
 uploads:
 
 ```bash
-python3 tools/refresh_feeds.py --csv >> data/videos.csv
+python3 tools/refresh_feeds.py --deep --csv >> data/videos.csv
 ```
+
+`--deep` reads the channel's videos and shorts tabs. Without it you only see the
+latest 15 uploads, which is how a back catalogue stays invisible.
 
 That writes skeleton rows with the period and place columns blank and
 `verified=no`. Fill them in, then run the validator. Do not leave blank rows in a
@@ -106,8 +117,14 @@ id,name,lat,lon,country,wikidata
 lerna,Lerna,37.5583,22.7167,Greece,Q1362321
 ```
 
-Use a real site coordinate where one exists. `wikidata` is optional — leave it
-blank rather than guessing a Q-number.
+Do not type coordinates from memory — that is how a marker ends up in the wrong
+county. Look them up:
+
+```bash
+python3 tools/geocode.py "Lerna, Argolis, Greece"
+```
+
+`wikidata` is optional — leave it blank rather than guessing a Q-number.
 
 ## Removing yourself
 

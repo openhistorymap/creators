@@ -82,6 +82,7 @@ const S = {
   creators: new Map(),
   places: new Map(),
   videos: [],
+  pending: new Map(),      // creator id -> uploads found but not yet indexed
   yearMin: Y_MIN,
   yearMax: Y_MAX,
   platform: '*',
@@ -116,6 +117,19 @@ async function boot() {
       '<div class="empty"><p>Could not load the CSV data: ' + err.message +
       '<br>Serve this folder over HTTP (<code>./serve.sh</code>) — <code>file://</code> blocks fetch.</p></div>');
     return;
+  }
+
+  // Optional: written weekly by tools/build_pending.py. Absent on a fresh
+  // checkout, and that is fine — the panel just omits the section.
+  try {
+    const pend = await loadCSV('data/pending.csv');
+    pend.forEach(p => {
+      if (!S.pending.has(p.influencer_id)) S.pending.set(p.influencer_id, []);
+      S.pending.get(p.influencer_id).push(p);
+    });
+    S.pending.forEach(list => list.sort((a, b) => (b.published || '').localeCompare(a.published || '')));
+  } catch (err) {
+    /* no pending file: nothing to show */
   }
 
   creators.forEach((c, i) => {
@@ -511,6 +525,34 @@ function openProfile(id) {
     p.textContent = c.notes;
     sec.appendChild(p);
     box.appendChild(sec);
+  }
+
+  const pend = S.pending.get(c.id) || [];
+  if (pend.length) {
+    const ps = document.createElement('div');
+    ps.className = 'profile-section';
+    ps.innerHTML = '<h3>Latest uploads</h3>';
+    const note = document.createElement('p');
+    note.className = 'profile-notes pending-note';
+    note.textContent = 'Found by the weekly sweep, not indexed yet — no period or ' +
+                       'place, so these do not appear on the map or timeline.';
+    ps.appendChild(note);
+    pend.slice(0, 8).forEach(p => {
+      const a = document.createElement('a');
+      a.className = 'profile-item pending-item';
+      a.href = p.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      const d = document.createElement('span');
+      d.className = 'pi-year';
+      d.textContent = p.published || '';
+      const t = document.createElement('span');
+      t.className = 'pi-title';
+      t.textContent = p.title;
+      a.append(d, t);
+      ps.appendChild(a);
+    });
+    box.appendChild(ps);
   }
 
   // every item, earliest first

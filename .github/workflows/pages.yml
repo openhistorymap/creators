@@ -31,13 +31,7 @@ jobs:
         run: python3 tools/validate.py
 
       - name: Assemble the site
-        run: |
-          mkdir -p _site
-          cp index.html app.js style.css _site/
-          cp -r data _site/data
-          # a queryable snapshot alongside the CSVs, for anyone who wants SQL
-          python3 tools/build_sqlite.py --out _site/directory.db
-          ls -la _site
+        run: ./tools/build_site.sh
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

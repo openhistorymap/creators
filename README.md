@@ -20,11 +20,16 @@ issue and a bot opens the pull request for you.
 data/influencers.csv   who the creators are
 data/places.csv        the gazetteer (id, name, lat, lon, wikidata)
 data/videos.csv        the index: one row per reel / video
+data/pending.csv       machine-written: new uploads with no period or place yet
 index.html app.js style.css   the browser UI (Leaflet + a warped timeline)
 tools/validate.py      referential-integrity check over the CSVs
 tools/build_sqlite.py  optional: derive directory.db for SQL querying
 tools/refresh_feeds.py poll the channels for uploads not yet indexed
 tools/issue_to_row.py  turn a submission issue into validated CSV rows
+tools/channel_videos.py read a channel's videos/shorts tab, past the 15-item feed
+tools/build_pending.py  write data/pending.csv: new uploads, not yet indexed
+tools/geocode.py        turn a place name into a real coordinate (Nominatim)
+tools/build_site.sh     assemble _site/ for GitHub Pages
 ```
 
 ## Run it
@@ -181,6 +186,21 @@ of a new video is a judgement call. It also re-checks that each feed is still
 titled what `influencers.csv` expects, which is what caught the wrong channel ids
 in the first place.
 
+## Pending uploads
+
+`data/pending.csv` is the one machine-written file here. Every Monday the sweep
+rewrites it with recent uploads that are **not** in `videos.csv`, commits it, and
+redeploys the site. Each creator's profile panel then shows them under **Latest
+uploads**.
+
+Those rows carry **no `year_start`, no `year_end`, no `era` and no `places`**, and
+they never reach the map or the timeline. Deciding what period and place a video
+covers is the editorial judgement this directory exists to record, so the robot
+does not guess at it — it only says "this exists and nobody has looked at it yet".
+
+Promoting one is the normal contributionroute: open an **Add a video or reel** issue,
+or send a pull request.
+
 ## Automation
 
 Four workflows, in `.github/workflows/`:
@@ -190,7 +210,7 @@ Four workflows, in `.github/workflows/`:
 | `validate.yml` | every push and PR | runs `tools/validate.py` and the SQLite build |
 | `pages.yml` | push to `main` | validates, assembles `_site/`, deploys to GitHub Pages |
 | `submission.yml` | issue labelled `add-channel` / `add-item` | runs `tools/issue_to_row.py`, opens a PR, or comments the error back on the issue |
-| `refresh.yml` | Mondays 06:17 UTC | sweeps every channel feed and files one issue listing uploads that are not indexed |
+| `refresh.yml` | Mondays 06:17 UTC | rewrites `data/pending.csv`, commits and republishes it, and files the deep backlog as one issue |
 
 The submission bot **prepares**, a human **merges**. It resolves the channel id,
 reads the real title and upload date, works out whether the item is a Short, and

@@ -6,49 +6,116 @@ on:
   workflow_dispatch:
 
 permissions:
+  contents: write
   issues: write
-  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   sweep:
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Look for uploads that are not indexed yet
-        id: sweep
-        run: |
-          python3 tools/refresh_feeds.py > /tmp/new.txt 2> /tmp/log.txt || true
-          echo "count=$(grep -c '^  ' /tmp/new.txt || echo 0)" >> "$GITHUB_OUTPUT"
-          cat /tmp/log.txt
+      # Recent uploads that are not indexed yet. These carry no period and no
+      # place — that is a human judgement — so they are shown in the creator
+      # panel as "latest uploads" and never reach the map or the timeline.
+      - name: Refresh data/pending.csv
+        run: python3 tools/build_pending.py
 
-      - name: Open or update the sweep issue
-        if: steps.sweep.outputs.count != '0'
+      - name: Commit it if it moved
+        id: commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- data/pending.csv; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "pending.csv unchanged"
+          else
+            git add data/pending.csv
+            git commit -m "Weekly sweep: refresh pending uploads
+
+          Uploads found on the creators' feeds that are not in the index yet.
+          No period or place is claimed for any of them.
+
+          Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The full backlog, including back catalogues the 15-entry feed hides.
+      - name: File the deep backlog
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          python3 tools/refresh_feeds.py --deep > /tmp/new.txt 2> /tmp/log.txt || true
+          COUNT=$(grep -c '^  ' /tmp/new.txt || echo 0)
+          if [ "$COUNT" = "0" ]; then exit 0; fi
           {
-            echo "The weekly sweep found uploads that are not in \`data/videos.csv\` yet."
+            echo "The weekly deep sweep found **$COUNT uploads** that are not in"
+            echo "\`data/videos.csv\`."
             echo
-            echo "Nothing is added automatically: each one needs a period and a place,"
-            echo "which is a judgement call. Pick any of these and open an"
-            echo "**Add a video or reel** issue, or send a pull request."
+            echo "The most recent of these are already visible on the site, in each"
+            echo "creator's profile panel under **Latest uploads**, via"
+            echo "\`data/pending.csv\`. They are marked as not indexed and carry no"
+            echo "period or place."
+            echo
+            echo "Turning one into a real row means deciding what period and place it"
+            echo "covers, which is why it is not automated:"
+            echo
+            echo '```bash'
+            echo 'python3 tools/refresh_feeds.py --deep --csv   # skeleton rows'
+            echo 'python3 tools/geocode.py "Site, County, Country"'
+            echo '```'
+            echo
+            echo "<details><summary>Full list</summary>"
             echo
             echo '```'
-            cat /tmp/new.txt
+            head -c 55000 /tmp/new.txt
             echo '```'
-            echo
-            echo "_Some entries are deliberately skipped — off-topic, or with no"
-            echo "datable subject. They will keep reappearing here; that is expected._"
+            echo "</details>"
           } > /tmp/issue.md
           EXISTING=$(gh issue list --label feed-sweep --state open \
                        --json number -q '.[0].number' || true)
           if [ -n "$EXISTING" ]; then
             gh issue edit "$EXISTING" --body-file /tmp/issue.md
           else
-            gh issue create --title "Feed sweep: uploads not yet indexed" \
+            gh issue create --title "Backlog: uploads not yet indexed" \
               --label feed-sweep --body-file /tmp/issue.md
           fi
+
+  # A push made with GITHUB_TOKEN does not trigger pages.yml, so the sweep has
+  # to publish its own result or the panel would never actually update.
+  deploy:
+    needs: sweep
+    if: needs.sweep.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Refuse to publish broken data
+        run: python3 tools/validate.py
+      - name: Assemble the site
+        run: ./tools/build_site.sh
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

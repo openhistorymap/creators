@@ -330,3 +330,9 @@ body{
   .profile{width:100vw;border-left:none}
   .profile-stats{grid-template-columns:repeat(2,1fr)}
 }
+
+/* uploads the weekly sweep found but nobody has dated or placed yet */
+.pending-note{margin:0 0 7px;font-size:11px;color:var(--ink-3);font-style:italic}
+.profile-item.pending-item{opacity:.72}
+.profile-item.pending-item:hover{opacity:1}
+.pending-item .pi-year{color:var(--ink-3);flex-basis:74px}

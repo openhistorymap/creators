@@ -139,6 +139,20 @@ def main():
         if not (v.get("places") or "").strip():
             warn("videos.csv '%s': no place linked — it will not appear on the map" % vid)
 
+    # pending.csv is optional and machine-written, but a stale creator id in it
+    # would render a panel section under a creator that no longer exists.
+    pend_path = os.path.join(data, "pending.csv")
+    if os.path.exists(pend_path):
+        pend = read(pend_path)
+        indexed = {v["url"].rsplit("v=", 1)[-1] for v in videos}
+        for r in pend:
+            if r.get("influencer_id") not in creator_ids:
+                err("pending.csv: unknown influencer_id '%s'" % r.get("influencer_id"))
+            if r.get("video_id") in indexed:
+                warn("pending.csv '%s': already indexed, rerun tools/build_pending.py"
+                     % r.get("video_id"))
+        print("pending.csv: %d upload(s) awaiting a period and place" % len(pend))
+
     orphan = sorted(place_ids - used_places)
     if orphan:
         warn("places.csv: %d place(s) referenced by no video: %s"
