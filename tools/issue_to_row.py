@@ -143,6 +143,35 @@ def oembed(video_url):
         raise Fail("that video does not resolve (HTTP %s)" % e.code)
 
 
+TIKTOK_OEMBED = "https://www.tiktok.com/oembed?url="
+
+
+def tiktok_oembed(url):
+    """Verify a TikTok permalink. No auth needed, and a fabricated id 400s.
+
+    TikTok has no public per-account feed, so a whole channel cannot be swept
+    the way a YouTube one can — but a single permalink a human supplies can be
+    checked properly, which is all this pipeline needs.
+    """
+    try:
+        with get(TIKTOK_OEMBED + urllib.parse.quote(url, safe="")) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        if e.code == 400:
+            raise Fail("TikTok does not recognise that link. Check the URL is a "
+                       "video permalink, not a profile or a short share link.")
+        raise Fail("that TikTok link does not resolve (HTTP %s)" % e.code)
+
+
+def tiktok_id_of(url):
+    m = re.search(r"tiktok\.com/@[A-Za-z0-9._-]+/video/(\d{6,25})", url)
+    if not m:
+        raise Fail("could not read a TikTok video id out of `%s`. A share link "
+                   "like vm.tiktok.com/... needs expanding to its full "
+                   "/@user/video/... form first." % url)
+    return m.group(1)
+
+
 def is_reel(video_id):
     try:
         with get("https://www.youtube.com/shorts/" + video_id) as r:
@@ -224,24 +253,46 @@ def add_item(form):
     vheader, pheader = list(videos[0].keys()), list(places[0].keys())
 
     url = field(form, "videourl", required=True)
-    vid = video_id_of(url)
-    canonical = "https://www.youtube.com/watch?v=" + vid
-    if any(v["url"].rsplit("v=", 1)[-1] == vid for v in videos):
-        raise Fail("that video is already in the index")
-
-    meta = oembed(canonical)
-    author = (meta.get("author_name") or "").strip()
 
     def norm(s):
         return re.sub(r"[^a-z0-9]", "", (s or "").lower())
 
-    creator = next((c for c in creators if norm(c["name"]) == norm(author)), None)
-    if creator is None:
+    if "tiktok.com" in url:
+        tid = tiktok_id_of(url)
+        if any(tid in v["url"] for v in videos):
+            raise Fail("that video is already in the index")
+        meta = tiktok_oembed(url)
+        handle = (meta.get("author_unique_id") or "").strip()
+        canonical = "https://www.tiktok.com/@%s/video/%s" % (handle, tid)
+        platform = "tiktok"
+        thumb = meta.get("thumbnail_url", "")
+        published = ""          # TikTok oEmbed carries no publication date
+        # Match on the creator's recorded TikTok handle, not on display name:
+        # TikTok display names rarely match the channel name we list.
         creator = next((c for c in creators
-                        if norm(author) and norm(author) in norm(c["name"])), None)
-    if creator is None:
-        raise Fail("this video is by **%s**, who is not listed yet. Open an "
-                   "**Add a creator** issue first." % (author or "an unknown channel"))
+                        if handle and handle.lower() in (c.get("tiktok") or "").lower()), None)
+        if creator is None:
+            raise Fail("this TikTok is by **@%s**, and no listed creator has that "
+                       "handle in their `tiktok` column. Open an **Add a creator** "
+                       "issue first, or add the handle to the existing creator row."
+                       % (handle or "unknown"))
+    else:
+        vid = video_id_of(url)
+        canonical = "https://www.youtube.com/watch?v=" + vid
+        if any(v["url"].rsplit("v=", 1)[-1] == vid for v in videos):
+            raise Fail("that video is already in the index")
+        meta = oembed(canonical)
+        platform = "reel" if is_reel(vid) else "youtube"
+        thumb = "https://i.ytimg.com/vi/%s/hqdefault.jpg" % vid
+        author = (meta.get("author_name") or "").strip()
+        creator = next((c for c in creators if norm(c["name"]) == norm(author)), None)
+        if creator is None:
+            creator = next((c for c in creators
+                            if norm(author) and norm(author) in norm(c["name"])), None)
+        if creator is None:
+            raise Fail("this video is by **%s**, who is not listed yet. Open an "
+                       "**Add a creator** issue first." % (author or "an unknown channel"))
+        published = published_of(creator.get("youtube_channel_id", ""), vid)
 
     try:
         y0 = int(float(field(form, "periodstartyear", required=True)))
@@ -291,10 +342,10 @@ def add_item(form):
         "id": "",
         "influencer_id": creator["id"],
         "title": meta.get("title", "").strip(),
-        "platform": "reel" if is_reel(vid) else "youtube",
+        "platform": platform,
         "url": canonical,
-        "thumbnail": "https://i.ytimg.com/vi/%s/hqdefault.jpg" % vid,
-        "published": published_of(creator.get("youtube_channel_id", ""), vid),
+        "thumbnail": thumb,
+        "published": published,
         "year_start": y0,
         "year_end": y1,
         "era": field(form, "eralabel", required=True).replace("\n", " "),
@@ -316,7 +367,7 @@ def add_item(form):
     return ("Added **%s**\n\n"
             "- creator: %s\n- format: `%s`\n- period: %s to %s (%s)\n"
             "- places: %s\n%s\n"
-            "Title, upload date and format were read from YouTube, not from the issue."
+            "Title, creator and format were read from the platform, not from the issue."
             % (row["title"], creator["name"], row["platform"], y0, y1, row["era"],
                ", ".join("`%s`" % p for p in pids) or "_none_",
                ("- new places added: %s\n" % ", ".join("`%s`" % p for p in added))

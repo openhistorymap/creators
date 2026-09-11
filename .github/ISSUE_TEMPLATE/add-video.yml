@@ -6,8 +6,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        The bot fills in the title, upload date and format from the platform itself,
+        The bot fills in the title, creator and format from the platform itself,
         so you only need the URL plus the period and place it is *about*.
+
+        **YouTube and TikTok are both accepted.** For TikTok give the full
+        permalink (`tiktok.com/@user/video/123…`), not a profile or a
+        `vm.tiktok.com` share link, and the creator must already have that
+        handle in their `tiktok` column.
 
         The creator must already be listed. If they are not, open an
         **Add a creator** issue first.
@@ -15,7 +20,9 @@ body:
     id: video_url
     attributes:
       label: Video URL
-      description: "A full YouTube URL, e.g. https://www.youtube.com/watch?v=xxxxxxxxxxx"
+      description: >
+        A full YouTube URL (https://www.youtube.com/watch?v=…) or a TikTok
+        permalink (https://www.tiktok.com/@user/video/…)
     validations:
       required: true
   - type: input

@@ -25,10 +25,11 @@ What the bot fills in for you, so you never have to type it:
 | --- | --- |
 | Channel id | resolved from the handle via the channel's own canonical link |
 | Creator name | read from the channel's Atom feed |
-| Video title | read from YouTube's oEmbed endpoint |
-| Upload date | read from the channel feed |
-| Format (`youtube` / `reel`) | resolved by checking whether the id lives under `/shorts/` |
-| Thumbnail | derived from the video id |
+| Video title | read from the platform's oEmbed endpoint |
+| Creator | matched from the oEmbed author |
+| Upload date | read from the channel feed (YouTube only) |
+| Format (`youtube` / `reel` / `tiktok`) | YouTube: whether the id lives under `/shorts/`. TikTok: always `tiktok` |
+| Thumbnail | derived from the video id, or from TikTok's oEmbed |
 
 What **you** have to supply, because no machine can read it off the platform:
 
@@ -83,7 +84,7 @@ pull request.
 * Any language. The directory is not English-only, and non-English creators are
   actively wanted — titles stay in the original language, because that is what
   you would search for.
-* Any format. Reels and Shorts are first-class here, not an afterthought.
+* Any format. Reels, Shorts and TikToks are first-class here, not an afterthought.
 * Institutional channels (a museum, a national archaeology body) as well as
   individuals.
 
@@ -106,6 +107,22 @@ time but never appear on the map, and that is correct behaviour, not a gap.
 against the platform. It does **not** mean anyone watched the video to check the
 period and place. Those stay editorial, which is exactly why a human reviews
 every bot-opened pull request.
+
+## TikTok, Instagram and Facebook
+
+TikTok permalinks can be submitted like YouTube ones: its oEmbed endpoint needs
+no key and rejects a fabricated id, so the bot can verify a link a human
+supplies.
+
+What no public API offers is **discovery**. TikTok has no per-account feed —
+`tiktok.com/@user/rss` is the app shell, not a feed — so a creator's catalogue
+cannot be swept the way `tools/refresh_feeds.py --deep` sweeps YouTube. TikTok's
+own Display API only reads the account that authorised your app, and the
+Research API needs an approved application. Meta's reel permalinks are behind a
+login wall entirely.
+
+So for a short-form-first creator: record their profile on the creator row, and
+add items one permalink at a time. It is manual by necessity, not by choice.
 
 ## Adding a place
 

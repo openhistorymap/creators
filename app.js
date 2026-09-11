@@ -262,7 +262,7 @@ function buildCreatorFacet() {
         const hi = Math.max(...vids.map(v => v.y1));
         const places = new Set();
         vids.forEach(v => v.placeIds.forEach(p => places.add(p)));
-        const reels = vids.filter(v => v.platform === 'reel').length;
+        const reels = vids.filter(v => SHORT_FORM.has(v.platform)).length;
         meta.textContent = fmtSpan(lo, hi) + ' · ' + places.size + ' place' +
                            (places.size === 1 ? '' : 's') +
                            (reels ? ' · ' + reels + ' reel' + (reels === 1 ? '' : 's') : '');
@@ -429,7 +429,7 @@ function openProfile(id) {
   // stats
   const places = new Set();
   vids.forEach(v => v.placeIds.forEach(p => places.add(p)));
-  const reels = vids.filter(v => v.platform === 'reel').length;
+  const reels = vids.filter(v => SHORT_FORM.has(v.platform)).length;
   const stats = document.createElement('div');
   stats.className = 'profile-stats';
   const cells = [
@@ -661,8 +661,16 @@ function drawTicks() {
 
 /* ------------------------------------------------------------ filters */
 
+// "Reels / shorts" means any vertical short-form platform, not just YouTube
+// Shorts — a TikTok row would otherwise be invisible under that filter.
+const SHORT_FORM = new Set(['reel', 'short', 'tiktok', 'instagram']);
+
 function matchesNonYear(v) {
-  if (S.platform !== '*' && v.platform !== S.platform) return false;
+  if (S.platform === 'reel') {
+    if (!SHORT_FORM.has(v.platform)) return false;
+  } else if (S.platform !== '*' && v.platform !== S.platform) {
+    return false;
+  }
   if (S.creatorSel.size && !S.creatorSel.has(v.influencer_id)) return false;
   if (S.langSel.size && !S.langSel.has(v.lang)) return false;
   if (S.tagSel.size && !v.tags.some(t => S.tagSel.has(t))) return false;

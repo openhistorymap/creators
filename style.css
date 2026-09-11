@@ -336,3 +336,5 @@ body{
 .profile-item.pending-item{opacity:.72}
 .profile-item.pending-item:hover{opacity:1}
 .pending-item .pi-year{color:var(--ink-3);flex-basis:74px}
+.badge.tiktok{color:#7fb0a3;border-color:rgba(127,176,163,.4)}
+.badge.instagram{color:#c47f9e;border-color:rgba(196,127,158,.4)}
