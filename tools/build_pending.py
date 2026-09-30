@@ -27,13 +27,17 @@ FEED = "https://www.youtube.com/feeds/videos.xml?channel_id=%s"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
 HEAD = ["influencer_id", "video_id", "title", "published", "url", "thumbnail"]
+UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/120 Safari/537.36")
 PER_CREATOR = 8          # keep the panel a summary, not a second index
 
 
-# If this share of creators falls back, the feed endpoint is not broken for them
-# individually — this host is being throttled. Writing that run's output would
-# replace good dated rows with dateless ones, so abort instead.
-FALLBACK_ABORT_RATIO = 0.25
+# YouTube's /feeds/videos.xml answered normally on 28 September 2026 and began
+# returning 404 and 500 for almost every channel on 30 September, from both a
+# home host and GitHub runners. Whether that is a withdrawal, a bug or a very
+# wide block is not knowable from here — so the tab fallback now resolves real
+# upload dates and is a first-class path rather than a degraded one. The only
+# remaining tripwire is producing nothing at all.
 
 
 def fetch_feed(channel_id, attempts=3):
@@ -54,12 +58,25 @@ def fetch_feed(channel_id, attempts=3):
     raise last
 
 
-def from_videos_tab(channel_id):
-    """Fallback for a channel whose Atom feed will not answer.
+def publish_date(video_id):
+    """Exact upload date from the watch page.
 
-    The tab carries no publication dates, so those come back empty — which is why
-    this is a fallback and not the default.
+    The videos tab gives only a relative time ("3 weeks ago"), which is no use in
+    a dataset, so each kept video is resolved individually. Bounded by
+    PER_CREATOR, not by the size of the catalogue.
     """
+    try:
+        req = urllib.request.Request("https://www.youtube.com/watch?v=" + video_id,
+                                     headers={"User-Agent": UA})
+        html = urllib.request.urlopen(req, timeout=25).read().decode("utf-8", "replace")
+        m = re.search(r'"publishDate":"(\d{4}-\d{2}-\d{2})', html)
+        return m.group(1) if m else ""
+    except Exception:
+        return ""
+
+
+def from_videos_tab(channel_id):
+    """Every video a channel lists, when its Atom feed will not answer."""
     out = []
     for tab in ("videos", "shorts"):
         try:
@@ -103,7 +120,7 @@ def main():
                     continue
                 out.append({
                     "influencer_id": c["id"], "video_id": vid, "title": title,
-                    "published": "",
+                    "published": publish_date(vid),
                     "url": "https://www.youtube.com/watch?v=" + vid,
                     "thumbnail": "https://i.ytimg.com/vi/%s/hqdefault.jpg" % vid,
                 })
@@ -136,15 +153,28 @@ def main():
             })
             n += 1
 
-    if considered and len(fell_back) > considered * FALLBACK_ABORT_RATIO:
-        print("ABORT: %d of %d creators fell back to the videos tab. That is a "
-              "throttled host, not %d broken feeds — refusing to overwrite "
-              "data/pending.csv with dateless rows."
-              % (len(fell_back), considered, len(fell_back)), file=sys.stderr)
-        # Not an error: declining to write is the correct outcome. Exiting
-        # non-zero here would fail the whole weekly job, including the backlog
-        # issue, over a condition that resolves itself.
-        return 0
+    if considered and not out:
+        print("ABORT: %d creators checked and nothing came back from either the "
+              "feeds or the videos tabs. Refusing to overwrite data/pending.csv "
+              "with an empty file." % considered, file=sys.stderr)
+        return 0        # a correct no-op, not a failure
+
+    # The invariant that actually matters, whatever the cause: never trade dated
+    # rows for undated ones. A throttled run, a withdrawn endpoint and a YouTube
+    # outage all look different in the logs but identical in the data, and this
+    # catches all three.
+    existing = os.path.join(DATA, "pending.csv")
+    if os.path.exists(existing):
+        was = list(csv.DictReader(open(existing, encoding="utf-8")))
+        if was:
+            before = sum(1 for r in was if (r.get("published") or "").strip()) / float(len(was))
+            after = sum(1 for r in out if r["published"]) / float(len(out))
+            if after < before - 0.05:
+                print("ABORT: %.0f%% of the new rows carry an upload date against "
+                      "%.0f%% of the rows already committed. Refusing to make the "
+                      "data worse; leaving data/pending.csv as it is."
+                      % (after * 100, before * 100), file=sys.stderr)
+                return 0
 
     out.sort(key=lambda r: (r["influencer_id"], r["published"]), reverse=False)
     with io.open(os.path.join(DATA, "pending.csv"), "w",
@@ -154,7 +184,7 @@ def main():
         w.writerows(out)
     print("pending.csv: %d uploads across %d creators%s"
           % (len(out), len({r["influencer_id"] for r in out}),
-             " (%d via the videos tab, no dates)" % len(fell_back) if fell_back else ""),
+             " (%d via the videos tab)" % len(fell_back) if fell_back else ""),
           file=sys.stderr)
     return 0
 
